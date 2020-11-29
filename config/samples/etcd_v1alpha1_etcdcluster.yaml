@@ -1,0 +1,7 @@
+apiVersion: etcd.ydzs.io/v1alpha1
+kind: EtcdCluster
+metadata:
+  name: etcd-demo
+spec:
+  size: 3  # 副本数量（应该是奇数）
+  image: cnych/etcd:v3.4.13  # 镜像
