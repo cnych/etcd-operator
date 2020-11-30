@@ -40,8 +40,8 @@ type EtcdClusterReconciler struct {
 
 // +kubebuilder:rbac:groups=etcd.ydzs.io,resources=etcdclusters,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=etcd.ydzs.io,resources=etcdclusters/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=delete;update;patch
-// +kubebuilder:rbac:groups=core,resources=services,verbs=delete;update;patch
+// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 func (r *EtcdClusterReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx := context.Background()
