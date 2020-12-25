@@ -35,26 +35,26 @@ import (
 // EtcdBackupReconciler reconciles a EtcdBackup object
 type EtcdBackupReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log         logr.Logger
+	Scheme      *runtime.Scheme
 	BackupImage string
 }
 
 type backupState struct {
-	backup *etcdv1alpha1.EtcdBackup
-	actual *backupStateContainer  // 状态!=status，job pod 在执行
-	desired *backupStateContainer  // 期望的状态
+	backup  *etcdv1alpha1.EtcdBackup
+	actual  *backupStateContainer // 状态!=status，job pod 在执行
+	desired *backupStateContainer // 期望的状态
 }
 
 type backupStateContainer struct {
-	pod *corev1.Pod   // backup.name namespace
+	pod *corev1.Pod // backup.name namespace
 }
 
 // 获取真实的状态
 func (r *EtcdBackupReconciler) setStateActual(ctx context.Context, state *backupState) error {
 	var actual backupStateContainer
 	key := client.ObjectKey{
-		Name: state.backup.Name,
+		Name:      state.backup.Name,
 		Namespace: state.backup.Namespace,
 	}
 	// 获取对应的 Pod
@@ -70,7 +70,6 @@ func (r *EtcdBackupReconciler) setStateActual(ctx context.Context, state *backup
 	state.actual = &actual
 	return nil
 }
-
 
 // 获取期望的状态
 func (r *EtcdBackupReconciler) setStateDesired(state *backupState) error {
@@ -122,21 +121,25 @@ func (r *EtcdBackupReconciler) getState(ctx context.Context, req ctrl.Request) (
 func podForBackup(backup *etcdv1alpha1.EtcdBackup, image string) *corev1.Pod {
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: backup.Name,
+			Name:      backup.Name,
 			Namespace: backup.Namespace,
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{
 				{
-					Name: "etcd-backup",
-					Image: image,  // todo
+					Name:  "etcd-backup",
+					Image: image, // todo
+					Args: []string{
+						"--etcd-url", backup.Spec.EtcdUrl,
+						// todo，param
+					},
 					Resources: corev1.ResourceRequirements{
 						Requests: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("100m"),
+							corev1.ResourceCPU:    resource.MustParse("100m"),
 							corev1.ResourceMemory: resource.MustParse("100Mi"),
 						},
 						Limits: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("100m"),
+							corev1.ResourceCPU:    resource.MustParse("100m"),
 							corev1.ResourceMemory: resource.MustParse("100Mi"),
 						},
 					},
@@ -166,37 +169,37 @@ func (r *EtcdBackupReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) 
 	var action Action
 
 	// 开始判断状态
-	switch  {
+	switch {
 	case state.backup == nil: // 被删除了
 		log.Info("Backup Object not found")
-	case !state.backup.DeletionTimestamp.IsZero():  // 被标记为删除了
+	case !state.backup.DeletionTimestamp.IsZero(): // 被标记为删除了
 		log.Info("Backup Object has been deleted")
 	case state.backup.Status.Phase == "": // 要开始备份了，先标记状态为备份中
 		log.Info("Backup starting...")
 		newBackup := state.backup.DeepCopy()
-		newBackup.Status.Phase = etcdv1alpha1.EtcdBackupPhaseBackingUp  // 更改成备份中...
+		newBackup.Status.Phase = etcdv1alpha1.EtcdBackupPhaseBackingUp // 更改成备份中...
 		action = &PatchStatus{client: r.Client, original: state.backup, new: newBackup}
-	case state.backup.Status.Phase == etcdv1alpha1.EtcdBackupPhaseFailed:  // 失败了
+	case state.backup.Status.Phase == etcdv1alpha1.EtcdBackupPhaseFailed: // 失败了
 		log.Info("Backup has failed. Ignoring...")
-	case state.backup.Status.Phase == etcdv1alpha1.EtcdBackupPhaseCompleted:  // 完成了
+	case state.backup.Status.Phase == etcdv1alpha1.EtcdBackupPhaseCompleted: // 完成了
 		log.Info("Backup has completed. Ignoring...")
-	case state.actual.pod == nil:  // 当前还没有执行任务的Pod
+	case state.actual.pod == nil: // 当前还没有执行任务的Pod
 		log.Info("Backup Pod does not exists. Creating...")
 		action = &CreateObject{client: r.Client, obj: state.desired.pod}
-	case state.actual.pod.Status.Phase == corev1.PodFailed:  // Pod执行失败
+	case state.actual.pod.Status.Phase == corev1.PodFailed: // Pod执行失败
 		log.Info("Backup Pod failed.")
 		newBackup := state.backup.DeepCopy()
-		newBackup.Status.Phase = etcdv1alpha1.EtcdBackupPhaseFailed  // 更改成备份失败
+		newBackup.Status.Phase = etcdv1alpha1.EtcdBackupPhaseFailed // 更改成备份失败
 		action = &PatchStatus{client: r.Client, original: state.backup, new: newBackup}
-	case state.actual.pod.Status.Phase == corev1.PodSucceeded:  // Pod 执行成功
+	case state.actual.pod.Status.Phase == corev1.PodSucceeded: // Pod 执行成功
 		log.Info("Backup Pod success.")
 		newBackup := state.backup.DeepCopy()
-		newBackup.Status.Phase = etcdv1alpha1.EtcdBackupPhaseCompleted   // 更改成备份成功
+		newBackup.Status.Phase = etcdv1alpha1.EtcdBackupPhaseCompleted // 更改成备份成功
 		action = &PatchStatus{client: r.Client, original: state.backup, new: newBackup}
 	}
 
 	if action != nil {
-		if err := action.Execute(ctx); err !=  nil {
+		if err := action.Execute(ctx); err != nil {
 			return ctrl.Result{}, err
 		}
 	}

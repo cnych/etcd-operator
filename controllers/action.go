@@ -9,18 +9,16 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-
 // 定义的执行动作接口
 type Action interface {
 	Execute(ctx context.Context) error
 }
 
-
 // 更新Status
 type PatchStatus struct {
-	client client.Client
+	client   client.Client
 	original runtime.Object
-	new runtime.Object
+	new      runtime.Object
 }
 
 func (s *PatchStatus) Execute(ctx context.Context) error {
@@ -34,11 +32,10 @@ func (s *PatchStatus) Execute(ctx context.Context) error {
 	return nil
 }
 
-
 // 创建一个新的资源对象
 type CreateObject struct {
 	client client.Client
-	obj runtime.Object
+	obj    runtime.Object
 }
 
 func (o *CreateObject) Execute(ctx context.Context) error {

@@ -32,9 +32,9 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
-	defaultBackupImage = "busybox"
+	scheme             = runtime.NewScheme()
+	setupLog           = ctrl.Log.WithName("setup")
+	defaultBackupImage = "cnych/etcd-operator-backup:v0.0.9"
 )
 
 func init() {
@@ -78,9 +78,9 @@ func main() {
 		os.Exit(1)
 	}
 	if err = (&controllers.EtcdBackupReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("EtcdBackup"),
-		Scheme: mgr.GetScheme(),
+		Client:      mgr.GetClient(),
+		Log:         ctrl.Log.WithName("controllers").WithName("EtcdBackup"),
+		Scheme:      mgr.GetScheme(),
 		BackupImage: backupImage,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "EtcdBackup")

@@ -34,7 +34,7 @@ type EtcdBackupSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Endpoints    []string          `json:"endpoints"`
+	EtcdUrl      string            `json:"etcdUrl"`
 	StorageType  BackupStorageType `json:"storageType"`
 	BackupSource `json:",inline"`
 }
@@ -66,6 +66,7 @@ type EtcdBackupStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
 
 // EtcdBackup is the Schema for the etcdbackups API
 type EtcdBackup struct {
