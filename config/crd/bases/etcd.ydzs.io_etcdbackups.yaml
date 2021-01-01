@@ -40,24 +40,27 @@ spec:
               type: string
             oss:
               properties:
-                ossSecret:
-                  type: string
                 path:
                   type: string
+                secret:
+                  type: string
               required:
-              - ossSecret
               - path
+              - secret
               type: object
             s3:
               properties:
+                endpoint:
+                  type: string
                 path:
                   type: string
-                s3Secret:
+                secret:
                   description: 'Secret Object: AccessKey AcessSecryt'
                   type: string
               required:
+              - endpoint
               - path
-              - s3Secret
+              - secret
               type: object
             storageType:
               type: string

@@ -24,6 +24,9 @@ var (
 	EtcdBackupPhaseBackingUp EtcdBackupPhase = "BackingUp"
 	EtcdBackupPhaseCompleted EtcdBackupPhase = "Completed"
 	EtcdBackupPhaseFailed    EtcdBackupPhase = "Failed"
+
+	BackupStorageTypeS3  BackupStorageType = "s3"
+	BackupStorageTypeOSS BackupStorageType = "oss"
 )
 
 type BackupStorageType string
@@ -45,14 +48,15 @@ type BackupSource struct {
 }
 
 type S3BackupSource struct {
-	Path string `json:"path"`
+	Path     string `json:"path"`
+	Endpoint string `json:"endpoint"`
 	// Secret Object: AccessKey AcessSecryt
-	S3Secret string `json:"s3Secret"`
+	Secret string `json:"secret"`
 }
 
 type OSSBackupSource struct {
-	Path      string `json:"path"`
-	OSSSecret string `json:"ossSecret"`
+	Path   string `json:"path"`
+	Secret string `json:"secret"`
 }
 
 // EtcdBackupStatus defines the observed state of EtcdBackup
