@@ -5,8 +5,8 @@ metadata:
 spec:
   etcdUrl: "http://etcd-demo-0.etcd-demo:2379"  # 备份的节点 etcd 地址
   storageType: s3  # 指定备份类型
-  s3:
-    path: "ydzsio/etcd-snapshot.db"  # 数据存放目录，格式：<bucket>/<object path>
+  s3:  # my-bucket/{{ .Namespace }}/{{ .Name }}/{{ .CreationTimestamp }}/snapshot.db
+    path: "ydzsio/{{ .Namespace }}/{{ .Name }}/{{ .UID }}/snapshot.db"  # 数据存放目录，格式：<bucket>/<object path>
     endpoint: "play.min.io"  # MINIO 的地址
     secret: "minio-access-secret"   # 包含 accessKeyID 与 secretAccessKey
 #  oss:
